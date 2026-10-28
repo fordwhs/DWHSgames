@@ -32,6 +32,7 @@ img{max-width:100%}
   color-scheme:light;
 }
 html,body{height:100%}
+html{overflow:hidden;overscroll-behavior:none}
 [hidden]{display:none!important}
 body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;background:var(--sky);color:var(--ink);font-family:var(--round);overflow:hidden;
   display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -209,16 +210,6 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .roll b{font-family:var(--round);font-size:26px;color:#ffe27a}
 .end-btns{display:flex;gap:10px;flex:none}
 @media (prefers-reduced-motion:reduce){.ending.rolling .roll{animation:none;position:static}.end-logo{transition:none}}
-.rot{position:fixed;inset:0;z-index:50;background:rgba(43,26,12,.6);display:flex;align-items:center;justify-content:center;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.rot-card{background:var(--cream);border:4px solid var(--wood);border-radius:16px;box-shadow:0 6px 0 #4a2a10;padding:20px;max-width:300px;
-  display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
-.rot-card p{margin:0;font-family:"Noto Sans TC",sans-serif;line-height:1.7}
-.rot-card b{font-family:var(--round);font-size:20px}
-.phone{width:44px;height:76px;border:4px solid #2b1a0c;border-radius:10px;background:#bfe6ff;position:relative;animation:turn 2.4s ease-in-out infinite}
-.phone i{position:absolute;left:50%;bottom:4px;width:10px;height:4px;margin-left:-5px;border-radius:2px;background:#2b1a0c}
-@keyframes turn{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
-@media (prefers-reduced-motion:reduce){.phone{animation:none;transform:rotate(-90deg)}}
 .setup{position:fixed;inset:0;z-index:30;background:rgba(43,26,12,.55);display:flex;align-items:center;justify-content:center;overflow:auto;
   padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-bottom,0px))}
 .scard{width:100%;max-width:560px;max-height:100%;overflow:auto;background:var(--cream);border:4px solid var(--wood);border-radius:16px;
@@ -288,12 +279,6 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
     <p class="big gold">進入大灣，一起圓夢～</p>
   </div></div>
   <div class="end-btns" id="end-btns" hidden><button type="button" class="cgbtn" id="end-again">再看一次</button><button type="button" class="cgbtn go" id="end-close">回到校園</button></div>
-</div>
-
-<div class="rot" id="rot" hidden role="dialog" aria-labelledby="rot-t">
-  <div class="rot-card"><div class="phone" aria-hidden="true"><i></i></div>
-    <p id="rot-t"><b>手機橫放，體驗更佳！</b><br>把手機轉成橫的，可以看到更多校園。</p>
-    <button type="button" class="cgbtn go" id="rot-ok">知道了</button></div>
 </div>
 
 <div class="setup" id="setup" hidden>
@@ -477,8 +462,15 @@ const SND=(()=>{
       nextT+=STEP;stepI++;
     }
   }
-  function startMusic(){if(!on||playing||!ensure())return;ac.resume();playing=true;nextT=ac.currentTime+.06;timer=setInterval(schedule,60);schedule();}
-  function stopMusic(){if(!playing)return;playing=false;clearInterval(timer);}
+  let silentEl=null;
+  // phones only allow sound from a tap/click, and iPhones mute Web Audio on the silent switch unless media is playing
+  function unlock(){if(!ensure())return;
+    try{if(navigator.audioSession)navigator.audioSession.type="playback";}catch(_){}
+    try{if(!silentEl){silentEl=new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==");silentEl.loop=true;silentEl.volume=0.01;silentEl.setAttribute("playsinline","");}if(on&&silentEl.paused){const pr=silentEl.play();pr&&pr.catch(()=>{});}}catch(_){}
+    if(ac.state!=="running"){const pr=ac.resume();pr&&pr.catch(()=>{});}
+    try{const b=ac.createBuffer(1,1,22050),src=ac.createBufferSource();src.buffer=b;src.connect(ac.destination);src.start(0);}catch(_){}}
+  function startMusic(){if(!on)return;unlock();if(playing||!ac)return;playing=true;nextT=ac.currentTime+.06;timer=setInterval(schedule,60);schedule();}
+  function stopMusic(){try{silentEl&&silentEl.pause();}catch(_){}if(!playing)return;playing=false;clearInterval(timer);}
   function sfx(name){if(!on||!ensure())return;ac.resume();const t=ac.currentTime+.01;
     if(name==="jump")tone(380,t,.16,"square",.08,null,820);
     else if(name==="talk"){tone(880,t,.06,"square",.06);tone(1175,t+.07,.08,"square",.06);}
@@ -490,12 +482,12 @@ const SND=(()=>{
   }
   function label(){const b=document.getElementById("snd");b.setAttribute("aria-pressed",String(on));b.textContent=on?"♪ 開":"♪ 關";}
   function set(v){on=v;try{localStorage.setItem("dawan-sound",v?"on":"off");}catch(e){}label();if(v)startMusic();else stopMusic();}
-  return{startMusic,stopMusic,sfx,set,label,get on(){return on;}};
+  return{startMusic,stopMusic,sfx,set,label,unlock,get on(){return on;}};
 })();
 SND.label();
 $("snd").addEventListener("click",e=>{e.stopPropagation();SND.set(!SND.on);});
 // browsers only allow sound after the first tap or key press
-["pointerdown","keydown"].forEach(ev=>addEventListener(ev,e=>{if(SND.on&&!(e.target&&e.target.id==="snd"))SND.startMusic();},{passive:true}));
+["pointerdown","pointerup","touchend","click","keydown"].forEach(ev=>addEventListener(ev,e=>{if(SND.on&&!(e.target&&e.target.id==="snd"))SND.startMusic();},{passive:true,capture:true}));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)SND.stopMusic();else if(SND.on)SND.startMusic();});
 
 /* ---------------- player ---------------- */
@@ -1020,6 +1012,7 @@ function saveSetup(){const n=$("nick").value.trim().replace(/\s+/g," ");
   if(!n){$("nick-err").textContent="幫你的小花生取個暱稱吧！";$("nick").focus();return;}
   if(BLOCK.some(w=>n.toLowerCase().includes(w))){$("nick-err").textContent="這個暱稱可能讓別人不舒服，換一個吧！";$("nick").focus();return;}
   draft.name=n;PROFILE=Object.assign({},draft);try{localStorage.setItem("dawan-profile-v1",JSON.stringify(PROFILE));}catch(e){}
+  try{$("nick").blur();}catch(_){}setTimeout(()=>{snapTop();resize();},150);
   su.hidden=true;dialogOpen=false;SND.sfx("stamp");if(SND.on)SND.startMusic();cv.focus?.();}
 $("su-go").onclick=saveSetup;
 $("nick").addEventListener("input",()=>{$("nick-err").textContent="";});
@@ -1163,15 +1156,12 @@ function openJapan(){cgMode="lib";cg.hidden=false;$("cg-quit").textContent="離�
 
 
 
-/* ---------------- 手機直放時，建議橫放 ---------------- */
-(function(){const portrait=matchMedia("(orientation:portrait)"),touch=matchMedia("(pointer:coarse)");
-  let shown=false;try{shown=!!sessionStorage.getItem("dawan-rot");}catch(_){}
-  const rot=$("rot");
-  function check(){if(!portrait.matches){rot.hidden=true;setTimeout(resize,60);}}
-  if(touch.matches&&portrait.matches&&!shown){rot.hidden=false;try{sessionStorage.setItem("dawan-rot","1");}catch(_){}}
-  $("rot-ok").onclick=()=>{rot.hidden=true;};
-  (portrait.addEventListener?portrait.addEventListener("change",check):portrait.addListener(check));
-})();
+/* ---------------- 手機鍵盤收起後，畫面捲回頂端 ---------------- */
+// the page itself never scrolls; after typing the nickname, phones can leave it shifted up (HUD hidden, blank strip below)
+function snapTop(){if(window.scrollY||window.scrollX||document.documentElement.scrollTop)window.scrollTo(0,0);}
+addEventListener("scroll",snapTop,{passive:true});
+$("nick").addEventListener("blur",()=>setTimeout(()=>{snapTop();resize();},120));
+if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(()=>{snapTop();resize();},120));
 
 /* ---------------- 片尾：校徽＋電影字幕 ---------------- */
 let endTimers=[];
