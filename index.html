@@ -1609,7 +1609,7 @@ function makeBird(cvs){const T=window.THREE;let R;try{R=new T.WebGLRenderer({can
   cvs.addEventListener("pointermove",e=>{if(!ptrs.has(e.pointerId))return;const [ox,oy]=ptrs.get(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);idle=0;
     if(ptrs.size===1){if(btn===2){az-=(e.clientX-ox)*.008;el=Math.max(.25,Math.min(1.45,el+(e.clientY-oy)*.006));manualTilt=true;}else pan(e.clientX-ox,e.clientY-oy);}
     else if(ptrs.size===2){const [p1,p2]=[...ptrs.values()],dd=Math.hypot(p1[0]-p2[0],p1[1]-p2[1]),m=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2],ang=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]);
-      if(pinch)zoomAt(pinch/dd,m[0],m[1]);if(mid)pan(m[0]-mid[0],m[1]-mid[1]);if(twist!==null){let da=ang-twist;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;az-=da;}
+      if(pinch)zoomAt(pinch/dd,m[0],m[1]);if(mid)pan(m[0]-mid[0],m[1]-mid[1]);if(twist!==null){let da=ang-twist;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;az+=da;}
       pinch=dd;mid=m;twist=ang;}});
   const up=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2){pinch=0;mid=null;twist=null;}};["pointerup","pointercancel"].forEach(ev=>cvs.addEventListener(ev,up));
   cvs.addEventListener("wheel",e=>{e.preventDefault();zoomAt(1+Math.sign(e.deltaY)*.1,e.clientX,e.clientY);},{passive:false});
