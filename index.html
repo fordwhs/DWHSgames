@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#5a3518">
+<script>
+// 從 LINE 內建瀏覽器打開時，自動改用手機的預設瀏覽器（LINE 官方支援的 openExternalBrowser 參數）
+(function(){try{if(/\bLine\//i.test(navigator.userAgent)&&!/openExternalBrowser=1/.test(location.search)){
+  var u=new URL(location.href);u.searchParams.set("openExternalBrowser","1");location.replace(u.toString());}}catch(e){}})();
+</script>
 <meta name="description" content="大灣探險記：化身小花生，探索臺南市立大灣高級中學的校園生活。">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}
@@ -216,6 +221,9 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
   box-shadow:0 0 0 3px #f3d79a inset,0 6px 0 #4a2a10;padding:16px;display:grid;grid-template-columns:150px 1fr;gap:12px 16px;align-items:start}
 .scard h2{grid-column:1/-1;margin:0;font-size:24px;font-weight:900;text-align:center}
 .motto{grid-column:1/-1;margin:0;background:#2b1a0c;color:#ffe27a;border-radius:10px;padding:10px 12px;text-align:center;font-weight:900;font-size:15px;line-height:1.6}
+.goal{grid-column:1/-1;margin:0;text-align:center;font-family:"Noto Sans TC",sans-serif;font-size:15px;line-height:1.6;background:#fff7d6;border:2px dashed #e0a43a;border-radius:10px;padding:8px 10px}
+.goal b{color:#b0321f}
+.miss{margin:0;font-size:14px;line-height:1.7;background:#fff1ec;border:2px dashed #e8a08a;border-radius:10px;padding:8px 10px;color:#8a2a1a}
 .pv{position:static;inset:auto;width:150px;height:170px;border-radius:14px;background:radial-gradient(circle at 50% 70%,#fff3c4,#bfe6ff 70%);border:3px solid var(--wood)}
 .sform{display:flex;flex-direction:column;gap:8px;min-width:0}
 .sform label,.sform .t{font-weight:900;font-size:14px;color:#7a4a22}
@@ -285,6 +293,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
   <div class="scard" role="dialog" aria-modal="true" aria-labelledby="su-h">
     <h2 id="su-h">你是一粒來大灣探險的小花生！</h2>
     <p class="motto">大灣高中鼓勵學生表達自我，也要學著尊重他人！</p>
+    <p class="goal">🏅 任務：走遍校園，<b>集滿 9 個探索章</b>，就能解鎖通關結局！</p>
     <canvas class="pv" id="pv" width="300" height="340" aria-label="角色預覽"></canvas>
     <div class="sform">
       <label for="nick">暱稱（最多 8 個字）</label>
@@ -299,7 +308,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 
 <div class="stage" id="stage">
   <canvas id="cv" aria-label="大灣高中橫向校園地圖。用方向鍵移動、空白鍵跳、Enter 對話；手機用下方按鈕。"></canvas>
-  <div class="hint" id="hint">← → 移動　空白鍵 跳　走到頭上有 ! 的人旁邊按「對話」</div>
+  <div class="hint" id="hint">← → 移動　空白鍵 跳　集滿 9 個探索章解鎖結局！</div>
   <div class="pad" id="pad">
     <div class="grp">
       <button type="button" id="bl" aria-label="向左">◀</button>
@@ -847,8 +856,10 @@ function step(dt){
   P.vy+=GRAV*dt;
   const oldY=P.y;P.x=Math.max(30,Math.min(W-30,P.x+P.vx*dt));P.y+=P.vy*dt;P.ground=false;
   if(P.y>=GROUND-6){P.y=GROUND-6;P.vy=0;P.ground=true;}
-  const wasAir=oldY<P.y-0.01||P.vy>0;
-  if(P.vy>=0)for(const p of PLAT){if(P.x>p.x+4&&P.x<p.x+p.w-4&&oldY<=p.y+1&&P.y>=p.y){P.y=p.y;P.vy=0;P.ground=true;if(p.cloud&&wasAir&&!dialogOpen){const cs=SPOTS.find(z=>z.cloud);setTimeout(()=>enterCloud(cs),250);}}}
+  // the cloud fires once per landing: standing on it (or coming back from its scene) does not re-trigger
+  const wasOnCloud=P.onCloud;P.onCloud=false;
+  if(P.vy>=0)for(const p of PLAT){if(P.x>p.x+4&&P.x<p.x+p.w-4&&oldY<=p.y+1&&P.y>=p.y){P.y=p.y;P.vy=0;P.ground=true;
+    if(p.cloud){P.onCloud=true;if(!wasOnCloud&&!dialogOpen&&!P.cloudWait){P.cloudWait=true;setTimeout(()=>{P.cloudWait=false;if(P.onCloud&&!dialogOpen)enterCloud(SPOTS.find(z=>z.cloud));},250);}}}}
   P.walk=dir!==0&&P.ground;
   near=SPOTS.find(s=>Math.abs(s.x-P.x)<70&&(s.cloud?P.y<GROUND-60:P.y>GROUND-60))||null;
   $("bt").disabled=!near;
@@ -1163,6 +1174,9 @@ addEventListener("scroll",snapTop,{passive:true});
 $("nick").addEventListener("blur",()=>setTimeout(()=>{snapTop();resize();},120));
 if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(()=>{snapTop();resize();},120));
 
+const PLACE={hall:"活動中心",principal:"校長",gym:"體育班健身房",academic:"國中部教室",library:"圖書館",complex:"高中部傳送門",court:"風雨球場",track:"運動場",cloud:"神奇雲朵"};
+function missingHTML(){const m=SPOTS.filter(z=>!done.has(z.id));if(!m.length)return"";
+  return `<p class="miss">還差 <b>${m.length}</b> 個探索章才能解鎖通關結局：${m.map(z=>PLACE[z.id]||z.name).join("、")}，回校園找找看！</p>`;}
 /* ---------------- 片尾：校徽＋電影字幕 ---------------- */
 let endTimers=[];
 function allDone(){return SPOTS.every(z=>done.has(z.id));}
@@ -1374,9 +1388,10 @@ function enterCloud(s,force){if(!force&&dialogOpen)return;cur=s;dialogOpen=true;
       x.strokeText("進入大灣，",vw/2,vh*.42);x.fillStyle="#fff";x.fillText("進入大灣，",vw/2,vh*.42);x.strokeText("一起圓夢～",vw/2,vh*.42+46);x.fillStyle="#ffe27a";x.fillText("一起圓夢～",vw/2,vh*.42+46);x.globalAlpha=1;
       if(T-ended>3.4)return finish();}
     raf=requestAnimationFrame(frame);}
-  function finish(){cleanup();const first=!done.has("cloud");done.add("cloud");save();hud();cgSet("神奇雲朵","圓夢！",false);
+  function finish(){cleanup();const first=!done.has("cloud");done.add("cloud");save();hud();
+    if(allDone()){cg.hidden=true;$("dlg").hidden=true;$("pad").hidden=true;playEnding();return;} // all 9 stamps: roll straight into the endingcgSet("神奇雲朵","圓夢！",false);
     cgBody.innerHTML=`<div class="done-card"><h3>進入大灣，一起圓夢～</h3><p>臺清交成政師、中字輩、軍警……<br>繁星、學測、特殊選材、分科，大灣學長姐都有亮眼成績！${first?"<br>獲得「神奇雲朵」探索章！":""}</p>
-      <div class="btns"><button type="button" class="cgbtn" id="cl-again">再飛一次</button><button type="button" class="cgbtn go" id="cl-back">回到校園</button></div></div>`;
+      ${missingHTML()}<div class="btns"><button type="button" class="cgbtn" id="cl-again">再飛一次</button><button type="button" class="cgbtn go" id="cl-back">回到校園</button></div></div>`;
     $("cl-again").onclick=()=>enterCloud(s,true);$("cl-back").onclick=()=>{cgClose();};guard(["cl-again","cl-back"]);}
   function cleanup(){cancelAnimationFrame(raf);removeEventListener("resize",size);}
   raf=requestAnimationFrame(frame);cgStop=cleanup;
@@ -1477,7 +1492,7 @@ function gameQuiz(){
 /* ---------------- input ---------------- */
 cv.tabIndex=0;
 addEventListener("contextmenu",e=>{if(e.target.closest("canvas,.pad,.mgbar"))e.preventDefault();});
-if(matchMedia("(pointer:coarse)").matches)$("hint").textContent="按 ◀ ▶ 走路，點頭上有 ! 的人就會自己走過去";
+if(matchMedia("(pointer:coarse)").matches)$("hint").textContent="點有 ! 的人就會走過去　集滿 9 章解鎖結局！";
 addEventListener("keydown",e=>{
   if(!$("ending").hidden)return;
   if(!su.hidden)return;
