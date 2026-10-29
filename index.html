@@ -36,6 +36,7 @@ img{max-width:100%}
   color-scheme:light;
 }
 html,body{height:100%}
+input,textarea,select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 html{overflow:hidden;overscroll-behavior:none}
 [hidden]{display:none!important}
 body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;background:var(--sky);color:var(--ink);font-family:var(--round);overflow:hidden;
@@ -1283,10 +1284,11 @@ function PROFILE_SEEN_HOWTO(){try{return !!localStorage.getItem("dawan-howto-v1"
 $("how-go").onclick=()=>{$("howto").hidden=true;dialogOpen=false;try{localStorage.setItem("dawan-howto-v1","1");}catch(_){}if(SND.on)SND.startMusic();};
 /* ---------------- 手機鍵盤收起後，畫面捲回頂端 ---------------- */
 // the page itself never scrolls; after typing the nickname, phones can leave it shifted up (HUD hidden, blank strip below)
-function snapTop(){if(window.scrollY||window.scrollX||document.documentElement.scrollTop)window.scrollTo(0,0);}
+const typing=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);};
+function snapTop(){if(typing())return;if(window.scrollY||window.scrollX||document.documentElement.scrollTop)window.scrollTo(0,0);}
 addEventListener("scroll",snapTop,{passive:true});
-$("nick").addEventListener("blur",()=>setTimeout(()=>{snapTop();resize();},120));
-if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(()=>{snapTop();resize();},120));
+document.addEventListener("focusout",e=>{if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))setTimeout(()=>{snapTop();resize();},150);});
+if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(()=>{if(!typing()){snapTop();resize();}},120));
 
 const PLACE={hall:"活動中心",principal:"校長",gym:"體育班健身房",academic:"國中部教室",library:"圖書館",complex:"高中部傳送門",court:"風雨球場",track:"運動場",cloud:"神奇雲朵"};
 function missingHTML(){const m=SPOTS.filter(z=>!done.has(z.id));if(!m.length)return"";
@@ -1987,7 +1989,8 @@ function gameChain(){
       <div class="slots" aria-hidden="true">${slots}</div>
       <form id="ch-f" autocomplete="off"><input id="ch-in" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" maxlength="${word.length+4}" aria-label="輸入英文單字" placeholder="${word[0]}…${word[word.length-1]}"><button type="submit" class="cgbtn go">送出</button></form>
       <p class="tip" id="ch-tip" aria-live="polite">${k>0?`接龍：開頭就是上一個字 <b>${W[k-1][1]}</b> 的最後一個字母「${word[0]}」`:"提示：紅色字母是開頭和結尾"}</p></div>`;
-    const inp=$("ch-in");setTimeout(()=>inp.focus(),60);
+    const inp=$("ch-in");if(!matchMedia("(pointer:coarse)").matches)setTimeout(()=>inp.focus(),60);
+    inp.addEventListener("focus",()=>setTimeout(()=>inp.scrollIntoView({block:"center"}),250));
     $("ch-f").onsubmit=e=>{e.preventDefault();const v=inp.value.trim().toLowerCase().replace(/\s+/g,"");if(!v)return;
       if(v===word){SND.sfx("jump");miss=0;k++;if(k<W.length)show();else cgWin("chain",`${W.map(w=>w[1]).join(" → ")}<br>一路接龍到底，英文好強！`);}
       else{miss++;SND.sfx("miss");inp.classList.remove("bad");void inp.offsetWidth;inp.classList.add("bad");inp.select();
