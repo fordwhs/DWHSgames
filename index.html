@@ -288,7 +288,9 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 3px #fff inset,0 0 0 2px #ff6a3a!important}
 .go{grid-column:1/-1;font-family:var(--round);font-weight:900;font-size:20px;padding:12px;border-radius:12px;border:3px solid #2b1a0c;
   background:linear-gradient(#ffe27a,#f2b62c);box-shadow:0 4px 0 #2b1a0c;cursor:pointer;color:var(--ink)}
-@media (max-width:520px){.hud{gap:6px}.hud h1{font-size:16px;letter-spacing:.02em}.snd{padding:4px 8px}.snd .full{display:none}.snd .ico{display:inline}.bar span{font-size:12px}}
+@media (max-width:520px){.hud{gap:5px}.hud h1{font-size:15px;letter-spacing:0}.snd{padding:4px 7px;font-size:12px}.bar{gap:4px}.bar span{font-size:12px}}
+.hud.t1 h1{font-size:13px}.hud.t1 .snd{padding:3px 5px;font-size:11px}.hud.t1{gap:4px}.hud.t2 h1{display:none}
+@media (max-width:400px){.bar{min-width:0;flex:1}.bar span{flex:none}.bar .track{min-width:14px}.hud h1{font-size:14px}.snd{padding:4px 6px}}
 @media (max-width:480px){.scard{grid-template-columns:1fr;padding:14px}.pv{justify-self:center;width:130px;height:140px}.hud h1{font-size:15px}.hud{gap:8px}.snd{padding:4px 8px;font-size:12px}}
 /* rowing */
 .rowwrap{max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px}
@@ -1741,6 +1743,12 @@ function makeBird(cvs){const T=window.THREE;let R;try{R=new T.WebGLRenderer({can
   return{dispose(){cancelAnimationFrame(raf);removeEventListener("resize",size);removeEventListener("keydown",keyNav);ctl.remove();try{R.dispose();}catch(_){}}};
 }
 
+function fitHud(){const h=document.querySelector(".hud");if(!h)return;h.classList.remove("t1","t2");
+  const over=()=>h.scrollWidth>h.clientWidth+1||$("snd").getBoundingClientRect().right>h.getBoundingClientRect().right+1||$("fill").parentNode.getBoundingClientRect().width<20;
+  if(over())h.classList.add("t1");if(over())h.classList.add("t2");}
+addEventListener("resize",()=>setTimeout(fitHud,60));
+new MutationObserver(()=>setTimeout(fitHud,0)).observe(document.querySelector(".hud"),{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitHud);setTimeout(fitHud,300);
 /* ---------------- 片尾：校徽＋電影字幕 ---------------- */
 
 let endTimers=[];
