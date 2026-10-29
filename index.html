@@ -1791,7 +1791,7 @@ function enterPortal(s){cur=s;dialogOpen=true;keys.l=keys.r=false;autoTo=null;$(
 
 
 /* ---------------- 第八站：跑操場一圈，看社團與活動 ---------------- */
-const CLUBS=["熱舞社","調飲社","辯論社","ACG 社團","羽球社","棒球社","籃球社","射箭社","園遊會"];
+const CLUBS=["熱舞社","熱音社・吉他社","調飲社","辯論社","ACG 社團","羽球社","棒球社","籃球社","射箭社","園遊會"];
 function openLap(){
   cgMode="lap";cg.hidden=false;$("cg-quit").textContent="離開";if(cgStop)cgStop();cgStop=null;cgBody.dataset.view="game";
   cgSet("運動場｜跑操場一圈","長按畫面加速",true);
@@ -1810,7 +1810,7 @@ function openLap(){
   const ku=e=>{if(e.key===" "||e.key==="ArrowRight")hold=false;};addEventListener("keyup",ku);
   const K=(i)=>["#e8453a","#2f5d9c","#3fae5a","#f2a81c","#9a6ad8","#ff8ab0","#1d8a8a","#7a4a22"][i%8];
   function kidAt(X,face,i,extra){kid(x,X,GY-6,Object.assign({face,hair:["#2a1a0c","#4a2a14","#1e140b"][i%3],shirt:K(i),trim:"#fff",girl:i%2===1},extra||{}),T);}
-  function sign(cx,t){x.save();x.beginPath();rrm2(cx-62,40,124,36,8);x.fillStyle="#7a4a22";x.fill();x.lineWidth=3;x.strokeStyle="#2b1a0c";x.stroke();
+  function sign(cx,t){x.save();x.font=`900 20px ${FONT}`;const sw=Math.max(124,x.measureText(t).width+32);x.beginPath();rrm2(cx-sw/2,40,sw,36,8);x.fillStyle="#7a4a22";x.fill();x.lineWidth=3;x.strokeStyle="#2b1a0c";x.stroke();
     x.font=`900 20px ${FONT}`;x.textAlign="center";x.textBaseline="middle";x.lineWidth=4;x.strokeStyle="#4a2a10";x.strokeText(t,cx,59);x.fillStyle="#fff4d6";x.fillText(t,cx,59);
     x.strokeStyle="#7a4a22";x.lineWidth=4;x.beginPath();x.moveTo(cx,76);x.lineTo(cx,110);x.stroke();x.restore();}
   function rrm2(a,b,w,h,r){x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
@@ -1823,6 +1823,26 @@ function openLap(){
      x.fillStyle="#2b1a0c";x.fillRect(b-140,GY-70,34,64);x.fillStyle="#555";[0,1].forEach(k=>{x.beginPath();x.arc(b-123,GY-52+k*28,9-k*2,0,7);x.fill();});
      [-50,10,70].forEach((dx,i)=>{const j=Math.abs(Math.sin(t*6+i*1.3))*16;x.save();x.translate(0,-j);kid(x,b+dx,GY-6,{face:i%2?-1:1,moving:true,hair:"#2a1a0c",shirt:K(i),trim:"#fff",girl:i===1},t*1.4+i);x.restore();});
      for(let k=0;k<3;k++){const ph=(t*.6+k/3)%1;txt("♪",b-110+k*30+ph*20,GY-90-ph*60,20,["#ff8ab0","#ffd23a","#9be8ff"][k]);}},
+   (b,t)=>{ // 熱音社・吉他社
+     // amp + drum kit
+     x.fillStyle="#2b2b2b";x.fillRect(b-160,GY-62,40,56);x.fillStyle="#555";x.beginPath();x.arc(b-140,GY-34,13,0,7);x.fill();x.fillStyle="#c9a24a";x.fillRect(b-156,GY-58,32,6);
+     const hit=Math.abs(Math.sin(t*8));
+     kidAt(b-95,1,0,{shirt:"#3a3f4a"});
+     x.fillStyle="#e8453a";x.beginPath();x.ellipse(b-70,GY-20,22,16,0,0,7);x.fill();x.lineWidth=2.5;x.strokeStyle="#2b1a0c";x.stroke();
+     x.fillStyle="#fff4d6";x.beginPath();x.ellipse(b-70,GY-20,15,11,0,0,7);x.fill();
+     x.strokeStyle="#c9ced6";x.lineWidth=2;x.beginPath();x.moveTo(b-50,GY-6);x.lineTo(b-50,GY-62);x.stroke();
+     x.fillStyle="#f2c23a";x.beginPath();x.ellipse(b-50,GY-62-hit*3,14,4,-.2+hit*.2,0,7);x.fill();x.stroke();
+     x.strokeStyle="#7a4a22";x.lineWidth=3;x.beginPath();x.moveTo(b-84,GY-42);x.lineTo(b-62,GY-30-hit*12);x.stroke();
+     // electric guitarist (head-bobbing)
+     x.save();x.translate(0,-Math.abs(Math.sin(t*4))*4);kidAt(b+10,-1,4,{shirt:"#9a6ad8"});x.restore();
+     x.save();x.translate(b+2,GY-34);x.rotate(.5+Math.sin(t*8)*.08);x.fillStyle="#e8453a";x.beginPath();x.moveTo(-16,0);x.quadraticCurveTo(-18,-12,-6,-10);x.quadraticCurveTo(0,-16,8,-8);x.quadraticCurveTo(16,6,0,10);x.quadraticCurveTo(-14,12,-16,0);x.fill();x.lineWidth=2;x.strokeStyle="#2b1a0c";x.stroke();
+     x.fillStyle="#7a4a22";x.fillRect(4,-6,30,4);x.restore();
+     // acoustic guitar player sitting on a stool
+     x.fillStyle="#b9793d";x.fillRect(b+92,GY-24,22,4);x.fillRect(b+94,GY-20,3,14);x.fillRect(b+109,GY-20,3,14);
+     kidAt(b+103,-1,5,{girl:true,shirt:"#ffffff"});
+     x.save();x.translate(b+96,GY-30);x.rotate(.35);x.fillStyle="#d9a35f";x.beginPath();x.ellipse(0,0,13,10,0,0,7);x.fill();x.lineWidth=2;x.strokeStyle="#2b1a0c";x.stroke();
+     x.fillStyle="#2b1a0c";x.beginPath();x.arc(0,0,3.5,0,7);x.fill();x.fillStyle="#7a4a22";x.fillRect(-36,-2,24,4);x.restore();
+     for(let k=0;k<4;k++){const ph=(t*.7+k/4)%1;txt(["♪","♫","♬","♩"][k],b-120+k*80+ph*16,GY-96-ph*70,20,["#ff8ab0","#ffd23a","#9be8ff","#b48aff"][k]);}},
    (b,t)=>{ // 調飲社
      kidAt(b-40,1,3);x.fillStyle="#fff";x.fillRect(b-100,GY-50,200,44);x.fillStyle="#ff9fc0";for(let i=0;i<10;i++)x.fillRect(b-100+i*20,GY-50,10,44);
      x.lineWidth=3;x.strokeStyle="#2b1a0c";x.strokeRect(b-100,GY-50,200,44);
@@ -1900,16 +1920,16 @@ function openLap(){
     x.restore();
     x.setTransform(d*sc,0,0,d*sc,0,0);
     {let bi=-1,bd=1e9;CLUBS.forEach((_,i)=>{const dd=Math.abs(px-(B0+i*SP));if(dd<bd){bd=dd;bi=i;}});
-      if(arch.state==="on"||(arch.state==="done"&&T-arch.doneAt<2.2)){const ty=Math.max(78,oy*.55);x.font=`900 ${oy>120?26:20}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=7;x.strokeStyle="#2b1a0c";
+      if(arch.state==="on"||(arch.state==="done"&&T-arch.doneAt<2.2)){const ty=oy>140?Math.max(78,oy*.55):112;x.font=`900 ${oy>120?26:20}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=7;x.strokeStyle="#2b1a0c";
         const t1=arch.state==="on"?`射箭體驗：點畫面放箭（${arch.shots+1} / 3）`:`射箭總分 ${arch.score} 分！`;x.strokeText(t1,vw/2,ty);x.fillStyle="#ffe27a";x.fillText(t1,vw/2,ty);
         if(arch.msgT>0){arch.msgT-=dt;x.lineWidth=6;x.strokeText(arch.msg,vw/2,ty+40);x.fillStyle="#fff";x.fillText(arch.msg,vw/2,ty+40);}}
-      else if(bd<190){const ty=Math.max(78,oy*.55);x.font=`900 ${oy>120?34:24}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=8;x.strokeStyle="#2b1a0c";
+      else if(bd<190){const ty=oy>140?Math.max(78,oy*.55):112;x.font=`900 ${oy>120?34:24}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=8;x.strokeStyle="#2b1a0c";
         const t1=`經過 ${CLUBS[bi]}`;x.strokeText(t1,vw/2,ty);x.fillStyle="#ffe27a";x.fillText(t1,vw/2,ty);}}
     // speed-up hint (hidden while holding or during archery)
     if(!hold&&arch.state!=="on"&&!(arch.state==="done"&&T-arch.doneAt<2.2)){const vh=Hh/sc,pulse=still.matches?1:.75+.25*Math.sin(T*5);
-      x.globalAlpha=pulse;x.font=`900 ${Math.min(22,vw/18)}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";const tx="👆 長按畫面任一側，可以加速！",tw=x.measureText(tx).width+30;
-      x.fillStyle="rgba(43,26,12,.82)";x.beginPath();const hx=vw/2-tw/2,hy=oy>140?oy+4:Math.max(8,oy+8);x.moveTo(hx+16,hy);x.arcTo(hx+tw,hy,hx+tw,hy+36,16);x.arcTo(hx+tw,hy+36,hx,hy+36,16);x.arcTo(hx,hy+36,hx,hy,16);x.arcTo(hx,hy,hx+tw,hy,16);x.fill();
-      x.fillStyle="#ffe27a";x.fillText(tx,vw/2,hy+19);x.globalAlpha=1;}
+      x.globalAlpha=pulse;const wide=oy<=140;x.font=`900 ${wide?15:Math.min(22,vw/18)}px ${FONT}`;x.textAlign="center";x.textBaseline="middle";const tx="👆 長按畫面任一側，可以加速！",tw=x.measureText(tx).width+30;
+      x.fillStyle="rgba(43,26,12,.82)";x.beginPath();const hx=wide?10:vw/2-tw/2,hy=oy>140?oy-46:Math.max(8,oy+8);x.moveTo(hx+16,hy);x.arcTo(hx+tw,hy,hx+tw,hy+36,16);x.arcTo(hx+tw,hy+36,hx,hy+36,16);x.arcTo(hx,hy+36,hx,hy,16);x.arcTo(hx,hy,hx+tw,hy,16);x.fill();
+      x.fillStyle="#ffe27a";x.fillText(tx,hx+tw/2,hy+19);x.globalAlpha=1;}
     // lap meter
     const pr=Math.min(1,px/FIN),mx0=vw-62,my0=40;x.lineWidth=8;x.strokeStyle="#d0613e";x.beginPath();x.ellipse(mx0,my0,42,22,0,0,7);x.stroke();
     x.lineWidth=2;x.strokeStyle="#2b1a0c";x.beginPath();x.ellipse(mx0,my0,46,26,0,0,7);x.stroke();x.beginPath();x.ellipse(mx0,my0,38,18,0,0,7);x.stroke();
@@ -1918,7 +1938,7 @@ function openLap(){
     const seen=Math.min(CLUBS.length,CLUBS.filter((_,i)=>px>B0+i*SP-150).length);cgSet("運動場｜跑操場一圈",`看到 ${seen} / ${CLUBS.length}`,true);
     raf=requestAnimationFrame(frame);}
   function win(){cancelAnimationFrame(raf);const first=!done.has("track");done.add("track");save();hud();SND.sfx("win");cgSet("運動場｜跑操場一圈","完成！",false);
-    cgBody.innerHTML=`<div class="done-card"><h3>跑完一圈！</h3><p>熱舞社、調飲社、辯論社、ACG 社團、羽球社、棒球社、籃球社、射箭社，還有熱鬧的園遊會……<br><b>大灣的校園生活就是這麼多彩多姿！</b>${first?"<br>獲得「運動場」探索章！":""}</p>
+    cgBody.innerHTML=`<div class="done-card"><h3>跑完一圈！</h3><p>熱舞社、熱音社、吉他社、調飲社、辯論社、ACG 社團、羽球社、棒球社、籃球社、射箭社，還有熱鬧的園遊會……<br><b>大灣的校園生活就是這麼多彩多姿！</b>${first?"<br>獲得「運動場」探索章！":""}</p>
       <div class="btns"><button type="button" class="cgbtn" id="lp-again">再跑一圈</button><button type="button" class="cgbtn go" id="lp-back">回到校園</button></div></div>`;
     $("lp-again").onclick=openLap;$("lp-back").onclick=cgClose;guard(["lp-again","lp-back"]);cleanup();}
   function cleanup(){cancelAnimationFrame(raf);removeEventListener("resize",size);removeEventListener("keyup",ku);cgKey=null;}
