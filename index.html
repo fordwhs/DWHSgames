@@ -94,6 +94,9 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .mgbar button{font-family:var(--round);font-weight:900;font-size:16px;padding:10px 18px;border-radius:12px;cursor:pointer;
   border:3px solid #2b1a0c;background:linear-gradient(#fffaf0,#efe2c2);color:var(--ink);box-shadow:0 3px 0 #2b1a0c}
 .mgbar button.swing{background:linear-gradient(#ffe27a,#f2b62c);font-size:20px;padding:12px 28px;touch-action:none}
+.mgbar button.mv{width:52px;padding:10px 0;font-size:20px;touch-action:none}
+.mgbar button.mv.held{transform:translateY(3px);box-shadow:none}
+@media (max-width:480px){.mgbar{gap:6px}.mgbar .sc{font-size:13px}.mgbar button{padding:9px 10px}.mgbar button.swing{padding:12px 14px}.mgbar button.mv{width:44px}}
 .mgbar button.swing.held{transform:translateY(3px);box-shadow:none}
 .result{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:min(340px,calc(100% - 32px));background:var(--cream);
   border:4px solid var(--wood);border-radius:14px;box-shadow:0 0 0 3px #f3d79a inset,0 6px 0 #4a2a10;padding:18px;display:flex;flex-direction:column;gap:12px;text-align:center}
@@ -401,6 +404,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
     <div class="mgbar">
       <span class="sc" id="mg-sc">擊中 0 / 3　剩 5 球</span>
       <button type="button" id="mg-quit">離開</button>
+      <button type="button" class="mv" id="mg-l" aria-label="向左移動">◀</button><button type="button" class="mv" id="mg-r" aria-label="向右移動">▶</button>
       <button type="button" class="swing" id="mg-swing">揮拍！</button>
     </div>
     <div class="result" id="mg-res" hidden>
@@ -483,7 +487,7 @@ const PLAT=[
 const SPOTS=[
  {id:"hall",name:"羽球教練",role:"活動中心｜國中羽球隊",x:600,hair:"#1e140b",shirt:"#2f8a5a",trim:"#1d5c3a",adult:true,racket:true,game:"badminton",
   say:"我是羽球隊教練，旁邊這兩位是國中部羽球隊的隊員。想不想試試看接我的發球？",
-  quest:"任務：教練會連發 5 顆球，球飛到你面前時按「揮拍」，打中 3 顆就過關！"},
+  quest:"任務：教練會連發 5 顆球，先移動到黃圈落點，球飛到面前時按「揮拍」，打中 3 顆就過關！"},
  {id:"principal",name:"校長",role:"大灣高中校長",x:950,hair:"#3a2414",shirt:"#3d4f7a",trim:"#f2d27a",girl:true,adult:true,
   say:"歡迎來到大灣高中！大灣是 Google 認證學校，是結合 AI 科技、在地文化蓬勃發展的學校喔！歡迎來體驗多彩多姿的校園生活！",
   quest:"跟校長打聲招呼，收下這枚探索章，繼續往前探險吧！"},
@@ -1013,25 +1017,30 @@ function mgResize(){const r=mc.getBoundingClientRect();const d=Math.min(2,device
 addEventListener("resize",()=>{if(!mg.hidden)mgResize();});
 function startBadminton(){
   mg.hidden=false;$("mg-res").hidden=true;mgResize();
-  G={dpr:Math.min(2,devicePixelRatio||1),hits:0,left:TOTAL,ball:null,swing:-1,cool:0,msg:"",msgT:0,wait:1.0,over:false,t:0};
+  G={dpr:Math.min(2,devicePixelRatio||1),px:HITX,ml:false,mr:false,drag:null,walk:false,hits:0,left:TOTAL,ball:null,swing:-1,cool:0,msg:"",msgT:0,wait:1.0,over:false,t:0};
   mgScore();$("mg-swing").focus();
 }
-function mgScore(){$("mg-sc").textContent=`擊中 ${G.hits}/${NEED}・剩 ${G.left} 球`;}
+function mgScore(){$("mg-sc").textContent=`擊中 ${G.hits}/${NEED}・剩 ${G.left}`;}
 function serve(){
-  const T=Math.max(1.05,1.6-(TOTAL-G.left)*.12);
-  const ty=HITY+(Math.random()*60-30);
-  G.ball={mode:"in",t:0,T,x0:600,y0:258,x1:HITX,y1:ty,cy:60+Math.random()*90,x:600,y:258,a:Math.PI};
+  // mix of serves: high slow lob, flat fast drive, short drop near the net, long deep clear
+  const kinds=[{n:"高遠球",T:[1.6,1.95],x:[150,200],cy:[-10,40]},{n:"平快球",T:[.85,1.05],x:[200,260],cy:[190,230]},
+               {n:"網前短球",T:[1.15,1.4],x:[300,345],cy:[110,160]},{n:"長球",T:[1.2,1.5],x:[130,175],cy:[60,110]}];
+  let k;do{k=kinds[Math.floor(Math.random()*kinds.length)];}while(G.lastKind===k.n&&Math.random()<.7);G.lastKind=k.n;
+  const R=([a,b])=>a+Math.random()*(b-a),x1=R(k.x),T=R(k.T),ty=HITY+(Math.random()*40-20);
+  G.ball={mode:"in",t:0,T,x0:600,y0:258,x1,y1:ty,cy:R(k.cy),x:600,y:258,a:Math.PI};say(k.n);
   G.left--;mgScore();
 }
 function bez(p0,c,p1,u){return (1-u)*(1-u)*p0+2*(1-u)*u*c+u*u*p1;}
 function swing(){
   if(!G||G.over||G.cool>0)return;G.swing=0;G.cool=.38;SND.sfx("swing");
   const b=G.ball;if(b&&b.mode==="in"){const u=b.t/b.T;
-    if(u>.8&&u<1.1){b.mode="out";b.t=0;b.T=.8;b.x0=b.x;b.y0=b.y;b.x1=720;b.y1=330;b.cy=-20;G.hits++;mgScore();SND.sfx("hit");say(["好球！","漂亮！","殺得好！"][G.hits%3]);}}
+    if(u>.8&&u<1.1&&Math.abs(G.px-b.x1)>48){say("沒跑到位！");}
+    else if(u>.8&&u<1.1){b.mode="out";b.t=0;b.T=.8;b.x0=b.x;b.y0=b.y;b.x1=720;b.y1=330;b.cy=-20;G.hits++;mgScore();SND.sfx("hit");say(["好球！","漂亮！","殺得好！"][G.hits%3]);}}
 }
 function say(m){G.msg=m;G.msgT=1;}
 function mgStep(dt){
   G.t+=dt;if(G.swing>=0){G.swing+=dt;if(G.swing>.3)G.swing=-1;}G.cool=Math.max(0,G.cool-dt);G.msgT=Math.max(0,G.msgT-dt);
+  {const dir=(G.mr?1:0)-(G.ml?1:0);if(dir)G.px+=dir*340*dt;if(G.drag!=null)G.px+=(G.drag-G.px)*Math.min(1,dt*14);G.px=Math.max(110,Math.min(370,G.px));G.walk=dir!==0||(G.drag!=null&&Math.abs(G.drag-G.px)>4);}
   const b=G.ball;
   if(!b){if(G.over)return;G.wait-=dt;if(G.wait<=0){if(G.hits>=NEED||G.left<=0)return finish();serve();}return;}
   b.t+=dt;const u=Math.min(1.25,b.t/b.T),px=b.x,py=b.y;
@@ -1072,16 +1081,16 @@ function mgDraw(){
   mx.fillStyle="#fff";mx.fillRect(378,256,44,6);
   // players (scaled up)
   const sw=G.swing>=0?G.swing/.3:-1;
-  mx.save();mx.translate(170,392);mx.scale(1.7,1.7);peanut(mx,0,0,{face:1,hair:PROFILE?PROFILE.hair:"#2a1a0c",outfit:PROFILE?PROFILE.outfit:"sport",racket:true,swing:sw>=0?(-1.6+sw*3.2):0.6},G.t);mx.restore();
+  mx.save();mx.translate(G.px-62,392);mx.scale(1.7,1.7);peanut(mx,0,0,{face:1,moving:G.walk&&!still.matches,hair:PROFILE?PROFILE.hair:"#2a1a0c",outfit:PROFILE?PROFILE.outfit:"sport",racket:true,swing:sw>=0?(-1.6+sw*3.2):0.6},G.t);mx.restore();
   const coachSw=G.ball&&G.ball.mode==="in"&&G.ball.t<.2?-1.2:0.6;
   mx.save();mx.translate(630,392);mx.scale(1.7,1.7);kid(mx,0,0,{face:-1,hair:"#1e140b",shirt:"#2f8a5a",trim:"#1d5c3a",adult:true,racket:true,swing:coachSw},G.t);mx.restore();
   // hit zone hint
-  if(G.ball&&G.ball.mode==="in"){const u=G.ball.t/G.ball.T;mx.beginPath();mx.arc(HITX,HITY,34,0,7);
+  if(G.ball&&G.ball.mode==="in"){const u=G.ball.t/G.ball.T;mx.beginPath();mx.arc(G.ball.x1,G.ball.y1,34,0,7);
     mx.strokeStyle=u>.8&&u<1.1?"rgba(255,200,58,.95)":"rgba(255,200,58,.35)";mx.lineWidth=5;mx.setLineDash([8,6]);mx.stroke();mx.setLineDash([]);}
   if(G.ball)shuttle(G.ball.x,G.ball.y,G.ball.a);
   if(G.msgT>0){mx.globalAlpha=Math.min(1,G.msgT*2);mx.font=`900 40px ${FONT}`;mx.lineJoin="round";mx.lineWidth=8;mx.strokeStyle="#2b1a0c";
     mx.strokeText(G.msg,400,170-(1-G.msgT)*20);mx.fillStyle="#ffd23a";mx.fillText(G.msg,400,170-(1-G.msgT)*20);mx.globalAlpha=1;}
-  if(!G.ball&&!G.over&&G.left===TOTAL){mx.font=`900 24px ${FONT}`;mx.fillStyle="#2b1a0c";mx.fillText("準備好了嗎？教練要發球囉！",400,140);}
+  if(!G.ball&&!G.over&&G.left===TOTAL){mx.font=`900 24px ${FONT}`;mx.fillStyle="#2b1a0c";mx.fillText("準備好了嗎？教練要發球囉！",400,140);mx.font=`700 17px ${FONT}`;mx.fillText(matchMedia("(pointer:coarse)").matches?"左右滑動畫面或按 ◀ ▶ 移動到黃圈":"← → 方向鍵移動到黃圈，空白鍵揮拍",400,172);}
   mx.restore();
 }
 function rrm(x,y,w,h,r){mx.beginPath();mx.moveTo(x+r,y);mx.arcTo(x+w,y,x+w,y+h,r);mx.arcTo(x+w,y+h,x,y+h,r);mx.arcTo(x,y+h,x,y,r);mx.arcTo(x,y,x+w,y,r);mx.closePath();}
@@ -1092,7 +1101,14 @@ const swBtn=$("mg-swing");
 swBtn.addEventListener("pointerdown",e=>{e.preventDefault();swBtn.classList.add("held");swing();});
 ["pointerup","pointerleave","pointercancel"].forEach(ev=>swBtn.addEventListener(ev,()=>swBtn.classList.remove("held")));
 swBtn.addEventListener("click",e=>{if(e.detail===0)swing();});
-mc.addEventListener("pointerdown",e=>{e.preventDefault();swing();});
+{let st=null;const toX=e=>{const r=mc.getBoundingClientRect();return (e.clientX-r.left)/mgScale-mgOff+62;};
+  mc.addEventListener("pointerdown",e=>{e.preventDefault();try{mc.setPointerCapture(e.pointerId);}catch(_){}st={x:e.clientX,y:e.clientY,t:performance.now(),moved:false};});
+  mc.addEventListener("pointermove",e=>{if(!st||!G)return;if(Math.abs(e.clientX-st.x)>10)st.moved=true;if(st.moved)G.drag=toX(e);});
+  const end=()=>{if(!st)return;if(!st.moved&&performance.now()-st.t<350)swing();st=null;if(G)G.drag=null;};
+  mc.addEventListener("pointerup",end);mc.addEventListener("pointercancel",end);}
+[["mg-l","ml"],["mg-r","mr"]].forEach(([id,k])=>{const b=$(id);
+  b.addEventListener("pointerdown",e=>{e.preventDefault();if(G)G[k]=true;b.classList.add("held");});
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>{if(G)G[k]=false;b.classList.remove("held");}));});
 function mgClose(){mg.hidden=true;G=null;closeDlg();}
 $("mg-quit").onclick=mgClose;$("mg-done").onclick=mgClose;
 $("mg-again").onclick=()=>startBadminton();
@@ -2080,7 +2096,8 @@ addEventListener("keydown",e=>{
   if(!$("howto").hidden){if(e.key==="Enter"||e.key==="Escape"){e.preventDefault();$("how-go").click();}return;}
   if(!su.hidden)return;
   if(!cg.hidden){if(e.key==="Escape")cgClose();else if(cgKey)cgKey(e);else if([" ","Enter"].includes(e.key)&&cgBody.dataset.view!=="menu"&&!e.target.closest(".match,.opts"))e.preventDefault();return;}
-  if(!mg.hidden){if([" ","Enter"].includes(e.key)){e.preventDefault();if($("mg-res").hidden)swing();}else if(e.key==="Escape")mgClose();return;}
+  if(!mg.hidden){if(G&&["ArrowLeft","a","A"].includes(e.key)){G.ml=true;e.preventDefault();}else if(G&&["ArrowRight","d","D"].includes(e.key)){G.mr=true;e.preventDefault();}
+    else if([" ","Enter"].includes(e.key)){e.preventDefault();if($("mg-res").hidden&&!e.repeat)swing();}else if(e.key==="Escape")mgClose();return;}
   if(dialogOpen){if(e.key==="Escape")closeDlg();return;}
   if(["ArrowLeft","a","A"].includes(e.key))keys.l=true;
   else if(["ArrowRight","d","D"].includes(e.key))keys.r=true;
@@ -2089,7 +2106,7 @@ addEventListener("keydown",e=>{
   else return;
   $("hint").hidden=true;
 });
-addEventListener("keyup",e=>{if(["ArrowLeft","a","A"].includes(e.key))keys.l=false;if(["ArrowRight","d","D"].includes(e.key))keys.r=false;});
+addEventListener("keyup",e=>{if(G){if(["ArrowLeft","a","A"].includes(e.key))G.ml=false;if(["ArrowRight","d","D"].includes(e.key))G.mr=false;}if(["ArrowLeft","a","A"].includes(e.key))keys.l=false;if(["ArrowRight","d","D"].includes(e.key))keys.r=false;});
 function hold(id,k){const b=$(id);
   const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("held");$("hint").hidden=true;};
   const off=()=>{keys[k]=false;b.classList.remove("held");};
