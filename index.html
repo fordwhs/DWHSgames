@@ -1152,7 +1152,7 @@ const COURSES=[
  {id:"taigi",ic:"🍍",name:"本土語",game:"水果台語連連看",desc:"把水果和它的台語說法配成一對。"},
  {id:"craft",ic:"🔪",name:"技藝課程",game:"切水果積分賽",desc:"手指滑過畫面切水果，小心別切到炸彈！"},
  {id:"elite",ic:"📐",name:"會考衝刺菁英班",game:"數學大考驗",desc:"一題基礎、一題進階，兩題都答對就過關。"},
- {id:"chain",ic:"🔤",name:"英文接龍比賽",game:"看圖拼單字接龍",desc:"看圖片拼出英文單字，下一個字的開頭就是上一個字的結尾！"},
+ {id:"chain",ic:"🔤",name:"英文接龍比賽",game:"看圖拼單字接龍",desc:"看圖拼出 3 個英文單字，下一個字的開頭就是上一個字的結尾！"},
 ];
 function cgSet(title,stat,full){$("cg-title").textContent=title;$("cg-stat").textContent=stat||"";cgBody.className="cgbody"+(full?" full":"");}
 function openCourses(){cgMode="courses";cg.hidden=false;cgMenu();}
@@ -1978,7 +1978,7 @@ function gameChain(){
    [["🐱","cat","貓"],["🌳","tree","樹"],["🥚","egg","蛋"],["🐐","goat","山羊"],["🐯","tiger","老虎"]],
    [["🐶","dog","狗"],["🍇","grape","葡萄"],["🐘","elephant","大象"],["🍅","tomato","番茄"],["🍊","orange","柳橙"]],
   ];
-  const W=CHAINS[Math.floor(Math.random()*CHAINS.length)];let k=0,miss=0;
+  const W=CHAINS[Math.floor(Math.random()*CHAINS.length)].slice(0,3);let k=0,miss=0;
   function show(){const [pic,word,zh]=W[k],reveal=Math.min(word.length-2,Math.floor(miss/2));
     cgSet("英文接龍比賽｜看圖拼單字",`第 ${k+1} / ${W.length} 個`);
     const slots=[...word].map((c,i)=>i===0||i===word.length-1||i<=reveal?`<b class="given">${c}</b>`:"<b></b>").join("");
@@ -2095,7 +2095,7 @@ addEventListener("keydown",e=>{
   if(!$("ending").hidden||!$("fb").hidden)return;
   if(!$("howto").hidden){if(e.key==="Enter"||e.key==="Escape"){e.preventDefault();$("how-go").click();}return;}
   if(!su.hidden)return;
-  if(!cg.hidden){if(e.key==="Escape")cgClose();else if(cgKey)cgKey(e);else if([" ","Enter"].includes(e.key)&&cgBody.dataset.view!=="menu"&&!e.target.closest(".match,.opts"))e.preventDefault();return;}
+  if(!cg.hidden){if(e.key==="Escape")cgClose();else if(cgKey)cgKey(e);else if([" ","Enter"].includes(e.key)&&cgBody.dataset.view!=="menu"&&!e.target.closest(".match,.opts,input,textarea,form"))e.preventDefault();return;}
   if(!mg.hidden){if(G&&["ArrowLeft","a","A"].includes(e.key)){G.ml=true;e.preventDefault();}else if(G&&["ArrowRight","d","D"].includes(e.key)){G.mr=true;e.preventDefault();}
     else if([" ","Enter"].includes(e.key)){e.preventDefault();if($("mg-res").hidden&&!e.repeat)swing();}else if(e.key==="Escape")mgClose();return;}
   if(dialogOpen){if(e.key==="Escape")closeDlg();return;}
