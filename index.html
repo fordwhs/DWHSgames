@@ -1462,19 +1462,19 @@ function makeBird(cvs){const T=window.THREE;let R;try{R=new T.WebGLRenderer({can
     k.strokeStyle="#2b1a0c";k.lineWidth=4;k.stroke();k.fillStyle="#fff4d6";k.textAlign="center";k.textBaseline="middle";k.fillText(text,w/2,c.height/2+2);
     const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false,transparent:true}));const h=big?5.4:4.4;sp.scale.set(h*w/c.height,h,1);sp.position.set(x,y,z);sp.renderOrder=10;root.add(sp);labels.push(sp);}
   const FH=3;
-  CAMPUS3D.blocks.forEach(([x,z,w,d,f,col,roof,label])=>{const [a,b]=P(x+w/2,z+d/2),W=w*S,Dd=d*S,h=f*FH;
+  CAMPUS3D.blocks.forEach(([x,z,w,d,f,col,roof,label])=>{const [a,b]=P(x+w/2,z+d/2),W=w*S,Dd=d*S,G1=roof==="passage"?5.4:FH,h=G1+(f-1)*FH; // 穿堂 blocks get a tall ground floor
     const tex=facade(col,roof==="glass"),tx=tex.clone(),tz=tex.clone();tx.needsUpdate=tz.needsUpdate=true;
     tx.wrapS=tz.wrapS=T.RepeatWrapping;tx.wrapT=tz.wrapT=T.RepeatWrapping;tx.repeat.set(Math.max(1,Math.round(Dd/14*4))/4,f);tz.repeat.set(Math.max(1,Math.round(W/14*4))/4,f);
     const side=t=>new T.MeshStandardMaterial({map:t,roughness:.8}),top=M(roof==="solar"?"#cfc6b4":"#d9cfbd");
-    const part=(x0,x1,y0,fl)=>{const pw=x1-x0,t1=tex.clone(),t2=tex.clone();t1.needsUpdate=t2.needsUpdate=true;[t1,t2].forEach(t=>{t.wrapS=t.wrapT=T.RepeatWrapping;});
+    const part=(x0,x1,y0,fl,ht)=>{ht=ht||fl*FH;const pw=x1-x0,t1=tex.clone(),t2=tex.clone();t1.needsUpdate=t2.needsUpdate=true;[t1,t2].forEach(t=>{t.wrapS=t.wrapT=T.RepeatWrapping;});
       t1.repeat.set(Math.max(1,Math.round(Dd/14*4))/4,fl);t2.repeat.set(Math.max(1,Math.round(pw/14*4))/4,fl);
-      const m=add(new T.Mesh(new T.BoxGeometry(pw,fl*FH,Dd),[side(t1),side(t1),top,top,side(t2),side(t2)]));m.position.set((x0+x1)/2,y0+fl*FH/2,b);
+      const m=add(new T.Mesh(new T.BoxGeometry(pw,ht,Dd),[side(t1),side(t1),top,top,side(t2),side(t2)]));m.position.set((x0+x1)/2,y0+ht/2,b);
       if(y0===0&&fl>=2)box(pw+.3,.7,Dd+.3,"#b8664a",(x0+x1)/2,.35,b);}; // brick plinth
     if(roof==="passage"){ // 穿堂: open ground floor in the middle, straight through to 綜合大樓
-      const g0=(655-CX)*S,g1=(715-CX)*S;part(a-W/2,g0,0,f);part(g1,a+W/2,0,f);part(g0,g1,FH,f-1);
-      for(const s of[-1,1])box(.5,FH,.5,"#ffffff",g0+.3,FH/2,b+s*(Dd/2-.3)),box(.5,FH,.5,"#ffffff",g1-.3,FH/2,b+s*(Dd/2-.3));}
+      const g0=(655-CX)*S,g1=(715-CX)*S;part(a-W/2,g0,0,f,h);part(g1,a+W/2,0,f,h);part(g0,g1,G1,f-1);
+      for(const s of[-1,1])box(.5,G1,.5,"#ffffff",g0+.3,G1/2,b+s*(Dd/2-.3)),box(.5,G1,.5,"#ffffff",g1-.3,G1/2,b+s*(Dd/2-.3));}
     else part(a-W/2,a+W/2,0,f);
-    if(f>=2)for(let i=1;i<f;i++)box(W+.25,.22,Dd+.25,"#ffffff",a,i*FH,b,{roughness:.6}); // floor slabs
+    if(f>=2)for(let i=1;i<f;i++)box(W+.25,.22,Dd+.25,"#ffffff",a,G1+(i-1)*FH,b,{roughness:.6}); // floor slabs
     if(roof==="gable"||roof==="passage"){const rh=2.6,sh=new T.Shape();sh.moveTo(-Dd/2-.6,0);sh.lineTo(Dd/2+.6,0);sh.lineTo(0,rh);sh.closePath();
       const g=new T.ExtrudeGeometry(sh,{depth:W+1.2,bevelEnabled:false});const m=add(new T.Mesh(g,M("#6f8fb4")));m.rotation.y=Math.PI/2;m.position.set(a-(W+1.2)/2,h,b);}
     else if(roof==="arch"){const m=add(new T.Mesh(new T.CylinderGeometry(Dd/2+.4,Dd/2+.4,W+.8,28,1,false,0,Math.PI),M("#c25b3c")));m.rotation.z=Math.PI/2;m.scale.set(.42,1,1);m.position.set(a,h,b);
@@ -1484,11 +1484,11 @@ function makeBird(cvs){const T=window.THREE;let R;try{R=new T.WebGLRenderer({can
         [-1,1].forEach(s=>{const t=add(new T.Mesh(new T.CylinderGeometry(1.1,1.1,2.2,14),M("#e8eef8")));t.position.set(a+s*(W/2-4),h+1.7,b+3);});}
       if(roof==="chimney"){box(1.4,3,1.4,"#9c8466",a+W/4,h+1.8,b);box(1.1,1.6,1.1,"#9c8466",a-W/5,h+1.1,b+2);CAMPUS3D.vents=[[a+W/4,h+3.4,b],[a-W/5,h+2,b+2]];}
       if(roof==="dome"){const dm=add(new T.Mesh(new T.SphereGeometry(2.6,20,12,0,Math.PI*2,0,Math.PI/2),M("#e8eef8",{metalness:.3,roughness:.4})));dm.position.set(a,h+.6,b);}}
-    if(label)tag(label,a,h+(roof==="gable"?7.5:5),b,label==="綜合大樓（高中部）");});
+    if(label)tag(label,a,h+(roof==="gable"||roof==="passage"?7.5:5),b,label==="綜合大樓（高中部）");});
   // connecting corridor between the classroom blocks
   // covered walkway on the 穿堂 axis: from 綜合大樓 through every block to the front
   {const [a]=P(685,0);[[185,332],[415,485],[570,640]].forEach(([z0,z1])=>{const [,b0]=P(0,z0),[,b1]=P(0,z1),L=b1-b0;
-      box(6.4,.35,L,"#a9b8c8",a,3.3,(b0+b1)/2);for(let k=0;k<=Math.floor(L/5);k++)for(const s of[-1,1])box(.3,3.2,.3,"#ffffff",a+s*2.9,1.6,b0+.4+k*(L-.8)/Math.max(1,Math.floor(L/5)));});}
+      box(6.4,.35,L,"#a9b8c8",a,5.5,(b0+b1)/2);for(let k=0;k<=Math.floor(L/5);k++)for(const s of[-1,1])box(.3,5.4,.3,"#ffffff",a+s*2.9,2.7,b0+.4+k*(L-.8)/Math.max(1,Math.floor(L/5)));});}
   const BIKEC=["#e8453a","#2f5d9c","#3fae5a","#f2a81c","#ffffff","#ff8ab0","#3a3f4a"];
   const wheelG=new T.TorusGeometry(.42,.06,6,16),barG=new T.CylinderGeometry(.045,.045,1,6),seatG=new T.BoxGeometry(.32,.08,.16),tyreM=M("#2b2b2b"),steelM=M("#9aa4b0",{metalness:.5,roughness:.4});
   function bike(col){const g=new T.Group(),fm=M(col,{roughness:.5,metalness:.2});
