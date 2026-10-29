@@ -49,7 +49,8 @@ body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;backgroun
 .snd[aria-pressed="true"]{background:#ffc83a;color:#2b1a0c;border-color:#2b1a0c}
 .hud h1{margin:0;font-size:20px;font-weight:900;letter-spacing:.06em;white-space:nowrap;
   text-shadow:0 2px 0 #2a1606}
-.bar{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.bar{flex:1;min-width:72px;display:flex;align-items:center;gap:8px}
+.snd .ico{display:none}
 .bar .track{flex:1;height:14px;border-radius:8px;background:#2a1606;border:2px solid #c99a5b;overflow:hidden}
 .bar .fill{height:100%;width:0;background:linear-gradient(#ffe27a,#f2a81c);transition:width .4s}
 .bar span{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -64,8 +65,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .pad button.act{background:var(--gold)}
 .pad button:disabled{opacity:.35}
 .pad button.held{transform:translateY(3px);box-shadow:none}
-.hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(43,26,12,.78);color:#fff4d6;
-  font-size:13px;padding:6px 14px;border-radius:999px;white-space:nowrap;pointer-events:none;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.hint{position:absolute;top:58px;left:50%;transform:translateX(-50%);background:rgba(43,26,12,.78);color:#fff4d6;
+  font-size:13px;padding:6px 14px;border-radius:14px;white-space:normal;text-align:center;line-height:1.5;pointer-events:none;width:max-content;max-width:calc(100% - 32px)}
 button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 /* dialogue */
 .dlg{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;z-index:5;
@@ -287,6 +288,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 3px #fff inset,0 0 0 2px #ff6a3a!important}
 .go{grid-column:1/-1;font-family:var(--round);font-weight:900;font-size:20px;padding:12px;border-radius:12px;border:3px solid #2b1a0c;
   background:linear-gradient(#ffe27a,#f2b62c);box-shadow:0 4px 0 #2b1a0c;cursor:pointer;color:var(--ink)}
+@media (max-width:520px){.hud{gap:6px}.hud h1{font-size:16px;letter-spacing:.02em}.snd{padding:4px 8px}.snd .full{display:none}.snd .ico{display:inline}.bar span{font-size:12px}}
 @media (max-width:480px){.scard{grid-template-columns:1fr;padding:14px}.pv{justify-self:center;width:130px;height:140px}.hud h1{font-size:15px}.hud{gap:8px}.snd{padding:4px 8px;font-size:12px}}
 /* rowing */
 .rowwrap{max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px}
@@ -322,9 +324,9 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
     <div class="track"><div class="fill" id="fill"></div></div>
     <span id="cnt">0 / 8</span>
   </div>
-  <button type="button" class="snd" id="fbbtn" hidden>回饋</button>
-  <button type="button" class="snd" id="endbtn" hidden>片尾</button>
-  <button type="button" class="snd" id="look">造型</button>
+  <button type="button" class="snd" id="fbbtn" hidden aria-label="回饋"><span class="full">回饋</span><span class="ico" aria-hidden="true">💬</span></button>
+  <button type="button" class="snd" id="endbtn" hidden aria-label="片尾"><span class="full">片尾</span><span class="ico" aria-hidden="true">🎬</span></button>
+  <button type="button" class="snd" id="look" aria-label="造型"><span class="full">造型</span><span class="ico" aria-hidden="true">👕</span></button>
   <button type="button" class="snd" id="snd" aria-pressed="false">♪ 音樂</button>
 </header>
 
