@@ -232,7 +232,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .roll-win{position:relative;flex:1;min-height:0;width:100%;max-width:520px;overflow:hidden;
   -webkit-mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent)}
 .roll{position:absolute;left:0;right:0;top:100%;text-align:center;font-family:"Noto Sans TC",var(--round);display:flex;flex-direction:column;gap:6px}
-.ending.rolling .roll{animation:roll 20s linear forwards}
+.ending.rolling .roll{animation:roll 16.7s linear forwards}
 @keyframes roll{from{transform:translateY(0)}to{transform:translateY(calc(-100% - 40vh))}}
 .roll p{margin:0;font-size:20px;line-height:1.6;letter-spacing:.06em}
 .roll .cap{margin-top:34px;font-size:14px;color:#c9b8ff;letter-spacing:.3em}
@@ -241,7 +241,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
 .roll b{font-family:var(--round);font-size:26px;color:#ffe27a}
 .end-btns{display:flex;gap:10px;flex:none}
 @media (prefers-reduced-motion:reduce){.ending.rolling .roll{animation:none;position:static}.end-logo{transition:none}}
-.setup{position:fixed;inset:0;z-index:30;background:rgba(43,26,12,.55);display:flex;align-items:center;justify-content:center;overflow:auto;
+.setup{position:fixed;inset:0;z-index:45;background:rgba(43,26,12,.55);display:flex;align-items:center;justify-content:center;overflow:auto;
   padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-bottom,0px))}
 .scard{width:100%;max-width:560px;max-height:100%;overflow:auto;background:var(--cream);border:4px solid var(--wood);border-radius:16px;
   box-shadow:0 0 0 3px #f3d79a inset,0 6px 0 #4a2a10;padding:16px;display:grid;grid-template-columns:150px 1fr;gap:12px 16px;align-items:start}
@@ -333,7 +333,7 @@ button:focus-visible{outline:3px solid #ff6a3a;outline-offset:2px}
     <p class="cap">特別感謝</p><p>各位同仁熱情演出！</p>
     <p class="big gold">進入大灣，一起圓夢～</p>
   </div></div>
-  <div class="end-btns" id="end-btns" hidden><button type="button" class="cgbtn" id="end-again">再看一次</button><button type="button" class="cgbtn" id="end-bird">3D 校園</button><button type="button" class="cgbtn" id="end-fb">給回饋</button><button type="button" class="cgbtn go" id="end-close">回到校園</button></div>
+  <div class="end-btns" id="end-btns" hidden><button type="button" class="cgbtn go" id="end-bird">3D 校園</button><button type="button" class="cgbtn go" id="end-fb">給回饋</button><button type="button" class="cgbtn go" id="end-close">回到校園</button></div>
 </div>
 
 <div class="setup" id="fb" hidden>
@@ -1731,12 +1731,11 @@ function playEnding(){const e=$("ending");endTimers.forEach(clearTimeout);endTim
   SND.sfx("win");start3DLogo();
   endTimers.push(setTimeout(()=>e.classList.add("show"),100));
   endTimers.push(setTimeout(()=>e.classList.add("rolling"),2600));
-  const showBtns=()=>{$("end-btns").hidden=false;guard(["end-again","end-close","end-bird","end-fb"]);};
+  const showBtns=()=>{$("end-btns").hidden=false;guard(["end-close","end-bird","end-fb"]);};
   if(still.matches)endTimers.push(setTimeout(showBtns,3200));
   rl.onanimationend=showBtns;
   try{localStorage.setItem("dawan-ending-v1","1");}catch(_){}
   $("endbtn").hidden=false;}
-$("end-again").onclick=playEnding;
 $("birdbtn").onclick=()=>{if(!dialogOpen)openBird();};
 $("end-bird").onclick=()=>{endTimers.forEach(clearTimeout);$("ending").hidden=true;openBird();};
 $("end-close").onclick=()=>{endTimers.forEach(clearTimeout);$("ending").hidden=true;dialogOpen=false;$("pad").hidden=false;};
@@ -2131,7 +2130,7 @@ $("fb-form").addEventListener("submit",async e=>{e.preventDefault();
     setTimeout(()=>{closeFeedback();$("fb-h").textContent="給大灣探險記一點建議！";btn.textContent="送出回饋";},1400);
   }catch(err){$("fb-err").textContent="網路好像不太穩，請稍後再試一次。";btn.disabled=false;btn.textContent="送出回饋";}
 });
-$("end-fb").onclick=()=>openFeedback("片尾");
+$("end-fb").onclick=()=>{endTimers.forEach(clearTimeout);$("ending").hidden=true;$("pad").hidden=false;openFeedback("片尾");};
 $("fbbtn").onclick=()=>{if(!dialogOpen||!$("ending").hidden)openFeedback("選單");};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("fb").hidden)closeFeedback();});
 function showFbBtn(){$("fbbtn").hidden=SPOTS.filter(z=>done.has(z.id)).length<3;}
